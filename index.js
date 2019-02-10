@@ -26,9 +26,7 @@ app.get('/sds', function (req, res) {
   AirQualitySensor.updatePM25(pm25);
   AirQualitySensor.updatePM10(pm10);
 
-  ThingSpeak.updatePM(pm25, pm10);
-
-  res.send('done');
+  ThingSpeak.updatePM(pm25, pm10, () => res.send('done'));
 });
 
 app.get('/dht', function (req, res) {
@@ -37,9 +35,7 @@ app.get('/dht', function (req, res) {
   TemperatureSensor.updateTemperature(temperature);
   HumiditySensor.updateHumidity(humidity);
 
-  ThingSpeak.updateTemperatureAndHumidity(temperature, humidity);
-
-  res.send('done');
+  ThingSpeak.updateTemperatureAndHumidity(temperature, humidity, () => res.send('done'));
 });
 
 app.listen(port, () => console.log(`HAP-NodeJS listening on port ${port}!`));

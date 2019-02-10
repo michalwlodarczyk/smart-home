@@ -12,7 +12,7 @@ const paramsMap = {
 
 thingSpeak.attachChannel(channelId, { writeKey });
 
-module.exports.updatePM = (pm25, pm10) => {
+module.exports.updatePM = (pm25, pm10, cb) => {
   thingSpeak.updateChannel(
     channelId,
     {
@@ -22,11 +22,15 @@ module.exports.updatePM = (pm25, pm10) => {
     (err, resp) => {
       if (!err && resp > 0) {
         console.log('pm update successfully. Entry number was: ' + resp);
+      } else {
+        console.log('error - pm not updated');
       }
+
+      cb();
     });
 };
 
-module.exports.updateTemperatureAndHumidity = (temperature, humidity) => {
+module.exports.updateTemperatureAndHumidity = (temperature, humidity, cb) => {
   thingSpeak.updateChannel(
     channelId,
     {
@@ -36,6 +40,10 @@ module.exports.updateTemperatureAndHumidity = (temperature, humidity) => {
     (err, resp) => {
       if (!err && resp > 0) {
         console.log('h&t update successfully. Entry number was: ' + resp);
+      } else {
+        console.log('error - h&t not updated');
       }
+
+      cb();
     });
 };
