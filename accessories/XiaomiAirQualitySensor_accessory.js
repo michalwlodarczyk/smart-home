@@ -4,7 +4,6 @@ const Characteristic = require('hap-nodejs').Characteristic;
 const uuid = require('hap-nodejs').uuid;
 
 let currentPM25 = 0;
-let currentPM10 = 0;
 
 const airQuality = () => {
   if (currentPM25 === 0) {
@@ -32,10 +31,10 @@ const airQuality = () => {
   }
 };
 
-const sensorUUID = uuid.generate('hap-nodejs:accessories:air-quality-sensor');
-const sensor = new Accessory('Air Quality Sensor', sensorUUID);
+const sensorUUID = uuid.generate('hap-nodejs:accessories:xiaomi-air-quality-sensor');
+const sensor = new Accessory('Xiaomi Air Quality Sensor', sensorUUID);
 
-sensor.username = "C1:5D:3A:AE:5E:FB";
+sensor.username = "C1:5D:3A:AE:5E:FF";
 sensor.pincode = "031-45-154";
 
 sensor.addService(Service.AirQualitySensor);
@@ -54,13 +53,6 @@ sensor
     callback(null, currentPM25);
   });
 
-sensor
-  .getService(Service.AirQualitySensor)
-  .addCharacteristic(Characteristic.PM10Density)
-  .on('get', (callback) => {
-    callback(null, currentPM10);
-  });
-
 module.exports.updatePM25 = pm25 => {
   currentPM25 = pm25;
 
@@ -71,14 +63,6 @@ module.exports.updatePM25 = pm25 => {
   sensor
     .getService(Service.AirQualitySensor)
     .setCharacteristic(Characteristic.AirQuality, airQuality());
-};
-
-module.exports.updatePM10 = pm10 => {
-  currentPM10 = pm10;
-
-  sensor
-    .getService(Service.AirQualitySensor)
-    .setCharacteristic(Characteristic.PM10Density, currentPM10);
 };
 
 module.exports.accessory = sensor;
