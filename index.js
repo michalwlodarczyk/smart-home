@@ -1,5 +1,8 @@
 const express = require('express');
 const storage = require('node-persist');
+const uuid = require('hap-nodejs').uuid;
+const Bridge = require('hap-nodejs').Bridge;
+const Accessory = require('hap-nodejs').Accessory;
 const miio = require('miio');
 require('dotenv').config();
 
@@ -15,7 +18,7 @@ const XiaomiHumiditySensor = require('./accessories/XiaomiHumiditySensor_accesso
 const app = express();
 const port = 3000;
 
-app.get('/', (req, res) => res.send('Hello World!'));
+app.get('/', (req, res) => res.send('HAP-NodeJS works!'));
 
 app.get('/sds', function (req, res) {
   const { pm25, pm10 } = req.query;
@@ -39,49 +42,29 @@ app.get('/dht', function (req, res) {
   res.send('done');
 });
 
-app.listen(port, () => console.log(`Example app listening on port ${port}!`));
+app.listen(port, () => console.log(`HAP-NodeJS listening on port ${port}!`));
 
 // Initialize our storage system
 storage.initSync();
 
-// Our Accessories will each have their own HAP server; we will assign ports sequentially
-let targetPort = 51826;
+const bridge = new Bridge('Node Bridge', uuid.generate("Node Bridge"));
 
-// Init sensors in Apple Home
-AirQualitySensor.accessory.publish({
-  port: targetPort++,
-  username: AirQualitySensor.accessory.username,
-  pincode: AirQualitySensor.accessory.pincode,
+bridge.on('identify', (paired, callback) => {
+  callback();
 });
 
-XiaomiAirQualitySensor.accessory.publish({
-  port: targetPort++,
-  username: XiaomiAirQualitySensor.accessory.username,
-  pincode: XiaomiAirQualitySensor.accessory.pincode,
-});
+bridge.addBridgedAccessory(AirQualitySensor.accessory);
+bridge.addBridgedAccessory(XiaomiAirQualitySensor.accessory);
+bridge.addBridgedAccessory(TemperatureSensor.accessory);
+bridge.addBridgedAccessory(XiaomiTemperatureSensor.accessory);
+bridge.addBridgedAccessory(HumiditySensor.accessory);
+bridge.addBridgedAccessory(XiaomiHumiditySensor.accessory);
 
-TemperatureSensor.accessory.publish({
-  port: targetPort++,
-  username: TemperatureSensor.accessory.username,
-  pincode: TemperatureSensor.accessory.pincode,
-});
-
-XiaomiTemperatureSensor.accessory.publish({
-  port: targetPort++,
-  username: XiaomiTemperatureSensor.accessory.username,
-  pincode: XiaomiTemperatureSensor.accessory.pincode,
-});
-
-HumiditySensor.accessory.publish({
-  port: targetPort++,
-  username: HumiditySensor.accessory.username,
-  pincode: HumiditySensor.accessory.pincode,
-});
-
-XiaomiHumiditySensor.accessory.publish({
-  port: targetPort++,
-  username: XiaomiHumiditySensor.accessory.username,
-  pincode: XiaomiHumiditySensor.accessory.pincode,
+bridge.publish({
+  username: "CC:22:3D:E3:CE:F6",
+  port: 51826,
+  pincode: "031-45-154",
+  category: Accessory.Categories.BRIDGE
 });
 
 let XiaomiAirPurrifierPro = null;
@@ -118,13 +101,7 @@ let XiaomiAirPurrifierPro = null;
 const signals = { 'SIGINT': 2, 'SIGTERM': 15 };
 Object.keys(signals).forEach(signal => {
   process.on(signal, () => {
-    XiaomiAirQualitySensor.accessory.unpublish();
-    AirQualitySensor.accessory.unpublish();
-    TemperatureSensor.accessory.unpublish();
-    XiaomiTemperatureSensor.accessory.unpublish();
-    HumiditySensor.accessory.unpublish();
-    XiaomiHumiditySensor.accessory.unpublish();
-
+    bridge.unpublish();
     XiaomiAirPurrifierPro.destroy();
 
     setTimeout(() => {
