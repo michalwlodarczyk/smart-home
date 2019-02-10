@@ -1,7 +1,7 @@
 const ThingSpeakClient = require('thingspeakclient');
 
 const thingSpeak = new ThingSpeakClient();
-const channelId = process.env.THING_SPEAK_CHANNEL_ID;
+const channelId = parseInt(process.env.THING_SPEAK_CHANNEL_ID);
 const writeKey = process.env.THING_SPEAK_WRITE_KEY;
 const paramsMap = {
   pm25: 'field1',
