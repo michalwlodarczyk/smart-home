@@ -63,7 +63,7 @@ bridge.publish({
   category: Accessory.Categories.BRIDGE
 });
 
-setTimeout(() => {
+setInterval(() => {
   (async () => {
     let XiaomiAirPurrifierPro = await miio.device({
       address: process.env.XIAOMI_AIR_PURRIFIER_IP,
