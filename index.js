@@ -63,42 +63,43 @@ bridge.publish({
   category: Accessory.Categories.BRIDGE
 });
 
-let XiaomiAirPurrifierPro = null;
+setTimeout(() => {
+  (async () => {
+    let XiaomiAirPurrifierPro = await miio.device({
+      address: process.env.XIAOMI_AIR_PURRIFIER_IP,
+      token: process.env.XIAOMI_AIR_PURRIFIER_TOKEN,
+    });
 
-(async () => {
-  XiaomiAirPurrifierPro = await miio.device({
-    address: process.env.XIAOMI_AIR_PURRIFIER_IP,
-    token: process.env.XIAOMI_AIR_PURRIFIER_TOKEN,
-  });
+    const pm25 = await XiaomiAirPurrifierPro.pm2_5();
+    XiaomiTemperatureSensor.updateTemperature(pm25);
 
-  const pm25 = await XiaomiAirPurrifierPro.pm2_5();
-  XiaomiTemperatureSensor.updateTemperature(pm25);
+    // XiaomiAirPurrifierPro.on('pm2.5Changed', (updatedPm25) => {
+    //   XiaomiAirQualitySensor.updatePM25(updatedPm25);
+    // });
 
-  XiaomiAirPurrifierPro.on('pm2.5Changed', (updatedPm25) => {
-    XiaomiAirQualitySensor.updatePM25(updatedPm25);
-  });
+    const { value: temperature } = await XiaomiAirPurrifierPro.temperature();
+    XiaomiTemperatureSensor.updateTemperature(temperature);
 
-  const { value: temperature } = await XiaomiAirPurrifierPro.temperature();
-  XiaomiTemperatureSensor.updateTemperature(temperature);
+    // XiaomiAirPurrifierPro.on('temperatureChanged', ({ value: updatedTemperature }) => {
+    //   XiaomiTemperatureSensor.updateTemperature(updatedTemperature);
+    // });
 
-  XiaomiAirPurrifierPro.on('temperatureChanged', ({ value: updatedTemperature }) => {
-    XiaomiTemperatureSensor.updateTemperature(updatedTemperature);
-  });
+    const humidity = await XiaomiAirPurrifierPro.relativeHumidity();
+    XiaomiHumiditySensor.updateHumidity(humidity);
 
-  const humidity = await XiaomiAirPurrifierPro.relativeHumidity();
-  XiaomiHumiditySensor.updateHumidity(humidity);
+    // XiaomiAirPurrifierPro.on('relativeHumidityChanged', (updatedHumidity) => {
+    //   XiaomiHumiditySensor.updateHumidity(updatedHumidity);
+    // });
 
-  XiaomiAirPurrifierPro.on('relativeHumidityChanged', (updatedHumidity) => {
-    XiaomiHumiditySensor.updateHumidity(updatedHumidity);
-  });
-})();
+    XiaomiAirPurrifierPro.destroy();
+  })();
+}, 1800000);
 
 // destroy sensors
 const signals = { 'SIGINT': 2, 'SIGTERM': 15 };
 Object.keys(signals).forEach(signal => {
   process.on(signal, () => {
     bridge.unpublish();
-    XiaomiAirPurrifierPro.destroy();
 
     setTimeout(() => {
       process.exit(128 + signals[signal]);
