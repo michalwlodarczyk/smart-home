@@ -21,7 +21,7 @@ const port = 3000;
 app.get('/', (req, res) => res.send('HAP-NodeJS works!'));
 
 app.get('/sds', function (req, res) {
-  console.log('updating pm...');
+  console.log('updating pm sensor...');
   const { pm25, pm10 } = req.query;
 
   AirQualitySensor.updatePM25(pm25);
@@ -31,7 +31,7 @@ app.get('/sds', function (req, res) {
 });
 
 app.get('/dht', function (req, res) {
-  console.log('updating t&h...');
+  console.log('updating t&h sensor...');
   const { temperature, humidity } = req.query;
 
   TemperatureSensor.updateTemperature(temperature);
@@ -66,7 +66,7 @@ bridge.publish({
 });
 
 setInterval(() => {
-  console.log('updating xiaomi...');
+  console.log('updating xiaomi sensors...');
   (async () => {
     let XiaomiAirPurrifierPro = await miio.device({
       address: process.env.XIAOMI_AIR_PURRIFIER_IP,
@@ -74,7 +74,7 @@ setInterval(() => {
     });
 
     const pm25 = await XiaomiAirPurrifierPro.pm2_5();
-    XiaomiTemperatureSensor.updateTemperature(pm25);
+    XiaomiAirQualitySensor.updatePM25(pm25);
     console.log(pm25);
 
     // XiaomiAirPurrifierPro.on('pm2.5Changed', (updatedPm25) => {
@@ -99,7 +99,7 @@ setInterval(() => {
 
     XiaomiAirPurrifierPro.destroy();
   })();
-}, 10000);
+}, 1800000);
 
 // destroy sensors
 const signals = { 'SIGINT': 2, 'SIGTERM': 15 };
